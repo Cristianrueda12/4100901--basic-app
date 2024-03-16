@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usart.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -47,13 +49,35 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(GPIO_Pin);
+
+  if(GPIO_Pin == GPIO_PIN_13){//PC13(PB1)
+	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	  HAL_UART_Transmit(&huart2, "PB1\r\n", 5, 10);
+
+  } else if (GPIO_Pin == GPIO_PIN_1){
+	  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin,0);
+	  for(uint16_t counter =0; counter < 0xFFF;counter++){}
+	  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+
+  }
+
+ // HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+
+  /* NOTE: This function should not be modified, when the callback is needed,
+           the HAL_GPIO_EXTI_Callback could be implemented in the user file
+   */
+}
 
 /* USER CODE END 0 */
 
@@ -85,34 +109,35 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
   /* USER CODE END 2 */
+  HAL_UART_Transmit(&huart2, "Hello\r\n",7 , 10);
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(HAL_GPIO_ReadPin(PB1_GPIO_Port, PB1_Pin)==0 ){
-	     HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
-	  }
-	     else {
-	    	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+	//  if(HAL_GPIO_ReadPin(PB1_GPIO_Port, PB1_Pin)==0 ){
+	  //   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+	  //}
+	    // else {
+	    	// HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 
-	     }
+	     //}
 
 
 
 	   // if(timeout_tick < HAL_GetTick()){
 		//  timeout_tick = HAL_GetTick() +500;
 		  //GPIOA-> ODR ^= 0x01 << 5;
-	  }
+//	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-
+}
 
 /**
   * @brief System Clock Configuration
@@ -156,41 +181,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PB1_Pin */
-  GPIO_InitStruct.Pin = PB1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(PB1_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
